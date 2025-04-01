@@ -1,10 +1,10 @@
 import React from 'react'
-import Dashboard from './Dashboard/index.jsx'
+import New from './New/index.jsx'
 
 const App = () => {
   return (
     <>
-     <Dashboard /> 
+     <New />
     </>
   )
 }
