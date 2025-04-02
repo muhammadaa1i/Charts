@@ -10,14 +10,26 @@ const initialLayout = [
   { i: "barChart", x: 6, y: 0, w: 6, h: 3, minW: 3, minH: 2 },
 ];
 
+const initialBlocks = [
+  { id: "lineChart", type: "line" },
+  { id: "barChart", type: "bar" },
+];
+
 const New = () => {
-  const [layout, setLayout] = useState(initialLayout);
-  const [blocks, setBlocks] = useState([
-    { id: "lineChart", type: "line" },
-    { id: "barChart", type: "bar" },
-  ]);
+  // Initialize state from localStorage if available, otherwise use initial values
+  const [layout, setLayout] = useState(() => {
+    const savedLayout = localStorage.getItem("dashboardLayout");
+    return savedLayout ? JSON.parse(savedLayout) : initialLayout;
+  });
+
+  const [blocks, setBlocks] = useState(() => {
+    const savedBlocks = localStorage.getItem("dashboardBlocks");
+    return savedBlocks ? JSON.parse(savedBlocks) : initialBlocks;
+  });
+
   const [gridWidth, setGridWidth] = useState(window.innerWidth);
   const [blockSizes, setBlockSizes] = useState({});
+  const [hasAnimated, setHasAnimated] = useState(false);
 
   // Update grid width on window resize
   useEffect(() => {
@@ -31,7 +43,18 @@ const New = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Calculate initial block sizes based on layout
+  // Set hasAnimated to true after the first render
+  useEffect(() => {
+    setHasAnimated(true);
+  }, []);
+
+  // Save blocks and layout to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("dashboardBlocks", JSON.stringify(blocks));
+    localStorage.setItem("dashboardLayout", JSON.stringify(layout));
+  }, [blocks, layout]);
+
+  // Calculate block sizes based on layout and gridWidth
   useEffect(() => {
     const initialSizes = {};
     layout.forEach((item) => {
@@ -43,9 +66,9 @@ const New = () => {
   }, [layout, gridWidth]);
 
   const addBlock = (type) => {
-    const newId = `block-${blocks.length + 1}`;
-    setBlocks([...blocks, { id: "spark", type: "spark" }, { id: "spiral", type: "spiral" }, { id: newId, type }]);
-    setLayout([...layout, { i: "spark", x: 0, y: 0, w: 6, h: 3, minW: 3, minH: 2 }, { i: "spiral", x: 0, y: 0, w: 6, h: 3, minW: 3, minH: 2 }, { i: newId, x: 0, y: Infinity, w: 6, h: 3, minW: 3, minH: 2 }]);
+    const newId = `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`; // Unique ID
+    setBlocks([...blocks, { id: newId, type }]);
+    setLayout([...layout, { i: newId, x: 0, y: Infinity, w: 6, h: 3, minW: 3, minH: 2 }]);
   };
 
   const removeBlock = (id) => {
@@ -65,6 +88,8 @@ const New = () => {
       ...prevSizes,
       [newItem.i]: { width, height },
     }));
+    // Update layout state to persist the resized layout
+    setLayout(layout);
   };
 
   return (
@@ -109,15 +134,15 @@ const New = () => {
                   {block.type === "line"
                     ? "LINE CHART"
                     : block.type === "bar"
-                    ? "BAR CHART"
-                    : block.type === "spark"
-                    ? "SPARK LINE"
-                    : "SPIRAL CHART"}
+                      ? "BAR CHART"
+                      : block.type === "spark"
+                        ? "SPARK LINE"
+                        : "SPIRAL CHART"}
                 </span>
-                <button onClick={() => removeBlock(block.id)} className="text-red-500 absolute right-3 top-1 ml-2 text-xl z-50">
-                  <i className="fa-solid fa-x"></i>
-                </button>
               </div>
+              <button onClick={() => removeBlock(block.id)} className="text-red-500 absolute right-3 top-1 ml-2 text-xl z-50">
+                <i className="fa-solid fa-x"></i>
+              </button>
               <div className="flex-1 flex items-center justify-center p-4">
                 {block.type === "line" ? (
                   <LineChart
@@ -238,7 +263,7 @@ const New = () => {
                         stroke="#00B7EB"
                         strokeWidth={2}
                         fill="url(#sparkGradient)"
-                        className="spark-area"
+                        className={`spark-area ${!hasAnimated ? "animate-spark" : ""}`}
                       />
                       <Tooltip
                         contentStyle={{ backgroundColor: "#2E3A3B", border: "none", color: "#FFFFFF", padding: "5px", borderRadius: "4px" }}
@@ -268,7 +293,7 @@ const New = () => {
                         fill="none"
                         stroke="#8884d8"
                         strokeWidth="8"
-                        className="spiral-arc"
+                        className={`spiral-arc ${!hasAnimated ? "animate-spiral" : ""}`}
                       />
                       {/* Data label for 1-2 */}
                       <text
@@ -286,7 +311,7 @@ const New = () => {
                         fill="none"
                         stroke="#00B7EB"
                         strokeWidth="8"
-                        className="spiral-arc"
+                        className={`spiral-arc ${!hasAnimated ? "animate-spiral delay-1" : ""}`}
                       />
                       {/* Data label for 3-4 */}
                       <text
@@ -304,7 +329,7 @@ const New = () => {
                         fill="none"
                         stroke="#82ca9d"
                         strokeWidth="8"
-                        className="spiral-arc"
+                        className={`spiral-arc ${!hasAnimated ? "animate-spiral delay-2" : ""}`}
                       />
                       {/* Data label for 5-6 */}
                       <text
@@ -322,7 +347,7 @@ const New = () => {
                         fill="none"
                         stroke="#FFFF00"
                         strokeWidth="8"
-                        className="spiral-arc"
+                        className={`spiral-arc ${!hasAnimated ? "animate-spiral delay-3" : ""}`}
                       />
                       {/* Data label for 7-8 */}
                       <text

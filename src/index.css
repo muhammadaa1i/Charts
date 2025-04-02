@@ -7,10 +7,10 @@ body {
   /* Custom animations for Spark Line and Spiral Chart */
   @layer utilities {
     /* Spark Line Animation */
-    .spark-area {
+    .animate-spark {
       stroke-dasharray: 1000;
       stroke-dashoffset: 1000;
-      animation: drawSpark 1.5s ease infinite;
+      animation: drawSpark 1.5s ease forwards;
     }
   
     @keyframes drawSpark {
@@ -20,25 +20,21 @@ body {
     }
   
     /* Spiral Chart Animation */
-    .spiral-arc {
+    .animate-spiral {
       stroke-dasharray: 251; /* Approximate circumference of the largest arc (2 * π * 40) */
       stroke-dashoffset: 251;
-      animation: drawSpiral 1.5s ease infinite;
+      animation: drawSpiral 1.5s ease forwards;
     }
   
-    .spiral-arc:nth-child(1) {
-      animation-delay: 0s;
-    }
-  
-    .spiral-arc:nth-child(3) {
+    .delay-1 {
       animation-delay: 0.3s;
     }
   
-    .spiral-arc:nth-child(5) {
+    .delay-2 {
       animation-delay: 0.6s;
     }
   
-    .spiral-arc:nth-child(7) {
+    .delay-3 {
       animation-delay: 0.9s;
     }
   
